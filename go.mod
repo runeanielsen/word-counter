@@ -1,3 +1,3 @@
-module github.com/runeanielsen/go-word-counter
+module github.com/runeanielsen/word-counter
 
 go 1.15
