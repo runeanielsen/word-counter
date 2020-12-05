@@ -6,27 +6,36 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 func main() {
 	lines := flag.Bool("l", false, "Count lines")
 	bytes := flag.Bool("b", false, "Count bytes")
-	filePath := flag.String("f", "", "File")
+	filePaths := flag.String("f", "", "File(s) seperated by ,")
 	flag.Parse()
 
-	var reader io.Reader = os.Stdin
+	countResult := 0
 
-	if *filePath != "" {
-		file, err := os.Open(*filePath)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
+	if *filePaths != "" {
+		paths := strings.Split(*filePaths, ",")
+
+		for _, fp := range paths {
+			strippedPath := strings.ReplaceAll(fp, " ", "")
+			file, err := os.Open(strippedPath)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+
+			reader := bufio.NewReader(file)
+			countResult += count(reader, *lines, *bytes)
 		}
-
-		reader = bufio.NewReader(file)
+	} else {
+		countResult = count(os.Stdin, *lines, *bytes)
 	}
 
-	fmt.Println(count(reader, *lines, *bytes))
+	fmt.Println(countResult)
 }
 
 func count(r io.Reader, countLines bool, countBytes bool) int {
