@@ -18,24 +18,30 @@ func main() {
 	countResult := 0
 
 	if *filePaths != "" {
-		paths := strings.Split(*filePaths, ",")
-
-		for _, fp := range paths {
-			strippedPath := strings.ReplaceAll(fp, " ", "")
-			file, err := os.Open(strippedPath)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				os.Exit(1)
-			}
-
-			reader := bufio.NewReader(file)
-			countResult += count(reader, *lines, *bytes)
-		}
+		countResult = handleFiles(*filePaths, *lines, *bytes)
 	} else {
 		countResult = count(os.Stdin, *lines, *bytes)
 	}
 
 	fmt.Println(countResult)
+}
+
+func handleFiles(filePaths string, countLines, countBytes bool) int {
+	paths := strings.Split(filePaths, ",")
+	countResult := 0
+	for _, fp := range paths {
+		strippedPath := strings.ReplaceAll(fp, " ", "")
+		file, err := os.Open(strippedPath)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		reader := bufio.NewReader(file)
+		countResult += count(reader, countLines, countBytes)
+	}
+
+	return countResult
 }
 
 func count(r io.Reader, countLines bool, countBytes bool) int {
@@ -50,7 +56,6 @@ func count(r io.Reader, countLines bool, countBytes bool) int {
 	}
 
 	wc := 0
-
 	for scanner.Scan() {
 		wc++
 	}
